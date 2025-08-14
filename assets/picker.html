@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Picker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="
+    script-src 'self' 'unsafe-inline' https://apis.google.com https://ssl.gstatic.com https://accounts.google.com;
+    frame-src 'self' https://accounts.google.com https://docs.google.com https://drive.google.com https://*.google.com https://*.googleusercontent.com;
+    connect-src 'self' https://*.googleapis.com https://accounts.google.com;
+    style-src 'self' 'unsafe-inline' https://accounts.google.com https://ssl.gstatic.com;
+    img-src 'self' data: blob: https://*.google.com https://*.gstatic.com https://*.ggpht.com https://*.googleusercontent.com;
+  ">
+
+    <script type="text/javascript" src="https://apis.google.com/js/api.js?onload=onGapiLoaded"></script>
+    <script type="text/javascript" src="https://accounts.google.com/gsi/client?onload=onGsiLoaded"></script>
+</head>
+<body style="margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; height: 100vh; background-color: #f5f5f5; font-family: sans-serif;">
+
+<div id="loading" style="text-align: center;">
+    <p>Loading File Picker...</p>
+    <p style="font-size: 12px; color: #666;">If the picker doesn't appear, please check your connection.</p>
+</div>
+
+<script type="text/javascript">
+    const DEVELOPER_KEY = '{{DEVELOPER_KEY}}';
+    const CLIENT_ID = '{{CLIENT_ID}}';
+    const OAUTH_TOKEN = '{{OAUTH_TOKEN}}';
+    const SET_OWNED_BY_ME = {{SET_OWNED_BY_ME}};
+    const QUERY = '{{QUERY}}';
+    const MIME_TYPES = '{{MIME_TYPES}}';
+
+    let gapiLoaded = false;
+    let gsiLoaded = false;
+
+    // This function is called when the GSI client script has loaded.
+    function onGsiLoaded() {
+        console.log("GSI client loaded.");
+        gsiLoaded = true;
+        checkAllLoaded();
+    }
+
+    // This function is called when the Google API script has loaded.
+    function onGapiLoaded() {
+      gapi.load('picker', () => {
+          console.log("Picker API loaded.");
+          gapiLoaded = true;
+          checkAllLoaded();
+      });
+    }
+
+    // This ensures that we don't try to create the picker until both scripts are ready.
+    function checkAllLoaded() {
+        if (gapiLoaded && gsiLoaded) {
+            console.log("All APIs are ready. Creating picker.");
+            createPicker();
+        }
+    }
+
+    // Callback function to handle the user's selection.
+    function pickerCallback(data) {
+        let response = {};
+        const action = data[google.picker.Response.ACTION];
+
+        if (action == google.picker.Action.PICKED) {
+            response.action = 'picked';
+            // Normalize the document data into a clean structure.
+            response.docs = data[google.picker.Response.DOCUMENTS].map(doc => ({
+                id: doc.id,
+                name: doc.name,
+                mimeType: doc.mimeType,
+                url: doc.url,
+                sizeBytes: doc.sizeBytes,
+                lastEditedUtc: doc.lastEditedUtc,
+                embedUrl: doc.embedUrl,
+                iconUrl: doc.iconUrl,
+                parentId: (doc.parents && doc.parents.length > 0) ? doc.parents[0].id : null
+            }));
+        } else if (action == google.picker.Action.CANCEL) {
+            response.action = 'cancel';
+        }
+
+        // Send the result back to Flutter.
+        if (window.flutter_inappwebview) {
+            window.flutter_inappwebview.callHandler('pickerCallback', response);
+        } else {
+            console.error("Flutter callback handler not found!");
+        }
+    }
+
+    // Main function to build and display the picker.
+    function createPicker() {
+        // Hide the "Loading..." message.
+        document.getElementById('loading').style.display = 'none';
+
+        const view = new google.picker.DocsView()
+            .setIncludeFolders(true)
+            .setOwnedByMe(SET_OWNED_BY_ME);
+
+        if (QUERY.length > 0) {
+            view.setQuery(QUERY);
+        }
+        if (MIME_TYPES.length > 0) {
+            view.setMimeTypes(MIME_TYPES);
+        }
+
+        const picker = new google.picker.PickerBuilder()
+            .setDeveloperKey(DEVELOPER_KEY)
+            .setAppId(CLIENT_ID.split('-')[0]) // The App ID is the first part of the Client ID.
+            .setOAuthToken(OAUTH_TOKEN)
+            .addView(view)
+            .setCallback(pickerCallback)
+            .setOrigin(window.location.protocol + '//' + window.location.host)
+            .build();
+
+        picker.setVisible(true);
+        console.log("Picker is now visible.");
+    }
+</script>
+</body>
+</html>

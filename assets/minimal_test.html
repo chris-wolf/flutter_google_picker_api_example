@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal GSI Test</title>
+    <script>
+        // This function will be called if the GSI script loads successfully.
+        function onGsiLoaded() {
+            console.log("SUCCESS: GSI client script has loaded successfully!");
+            // You could also use a JS handler to send this message to Flutter.
+            // window.flutter_inappwebview.callHandler('gsiStatus', 'success');
+        }
+    </script>
+    <script src="https://accounts.google.com/gsi/client?onload=onGsiLoaded" defer></script>
+</head>
+<body style="font-family: sans-serif;">
+<h1>Testing GSI Script Load</h1>
+<p>Check the JavaScript console in your IDE for a success message.</p>
+</body>
+</html>

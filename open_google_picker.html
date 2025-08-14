@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Drive Picker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
+    <style>
+        /* Make the page itself take up the full screen with no margins */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Prevent scrollbars on the body */
+        }
+
+        /* --- This group of styles removes the entire dialog frame --- */
+
+        /* 1. Completely hide the semi-transparent background dimmer.
+              We use display:none instead of just making it non-clickable. */
+        .picker-dialog-bg {
+            display: none !important;
+        }
+
+        /* 2. Make the main dialog container transparent and remove all decorations */
+        .picker-dialog {
+           background: transparent !important;
+           border: 0 !important;
+           box-shadow: none !important;
+
+           /* These ensure it fills the screen, which you already had */
+           left: 0 !important;
+           top: 0 !important;
+           width: 100% !important;
+           height: 100% !important;
+        }
+
+        /* 3. Ensure the content area and the iframe within it also fill the space */
+        .picker-dialog-content,
+        .picker-dialog-frame {
+            width: 100% !important;
+            height: 100% !important;
+            padding: 0 !important; /* Remove any padding */
+        }
+
+        /* 4. Hide the (usually empty) title and button bars just in case */
+        .picker-dialog-title,
+        .picker-dialog-buttons {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+<script type="text/javascript">
+    let picker;
+    let oauthToken;
+    let apiKey;
+    let appId;
+
+    // Use gapi.load for stability
+    window.onload = () => {
+gapi.load('client:picker', { 'callback': onGapiLoad });
+    };
+
+    function onGapiLoad() {
+        // 1. Get parameters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        oauthToken = urlParams.get('token');
+        apiKey = urlParams.get('apiKey');
+        appId = urlParams.get('appId');
+
+        if (!oauthToken || !apiKey || !appId) {
+            document.body.innerText = "Error: Missing required URL parameters (token, apiKey, appId).";
+            return;
+        }
+
+        // The gapi.client library is not strictly needed for the picker
+        // but can be loaded if you want to make other API calls from here.
+        // For this example, we just need the picker.
+        gapi.auth.setToken({ 'access_token': oauthToken });
+        createPicker();
+    }
+
+    // 2. Create and render a Picker object for searching images.
+    function createPicker() {
+      const view = new google.picker.View(google.picker.ViewId.DOCS);
+      view.setMimeTypes("image/png,image/jpeg,image/jpg,application/pdf"); // Example mime types
+
+      const pickerBuilder = new google.picker.PickerBuilder()
+        .setAppId(appId)
+        .setOAuthToken(oauthToken)
+        .setDeveloperKey(apiKey)
+        .setOrigin(window.location.origin)
+        .addView(view)
+        .addView(new google.picker.DocsUploadView()) // Optional: allow uploads
+        .setCallback(pickerCallback);
+        // .enableFeature(google.picker.Feature.MULTISELECT_ENABLED); // Uncomment for multi-select
+
+      picker = pickerBuilder.build();
+      picker.setVisible(true);
+    }
+
+    // 3. A simple callback implementation.
+    function pickerCallback(data) {
+      if (data.action == google.picker.Action.PICKED) {
+        // The most important part: send data back to Flutter
+        // The channel name 'PickerResult' must match the one in your Dart code.
+        if (window.PickerResult && window.PickerResult.postMessage) {
+            // We stringify the array of documents.
+            window.PickerResult.postMessage(JSON.stringify(data.docs));
+        } else {
+            // Fallback for debugging in a regular browser
+            console.log(data.docs);
+            document.body.innerText = "Picker finished. Data: " + JSON.stringify(data.docs);
+        }
+      } else if (data.action == google.picker.Action.CANCEL) {
+        // User cancelled. Send a specific message back.
+         if (window.PickerResult && window.PickerResult.postMessage) {
+            window.PickerResult.postMessage("CANCEL");
+        }
+      }
+    }
+</script>
+</body>
+</html>
