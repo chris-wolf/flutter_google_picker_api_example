@@ -56,10 +56,11 @@
     let oauthToken;
     let apiKey;
     let appId;
+    let mimeType; // Declare mimeType here
 
     // Use gapi.load for stability
     window.onload = () => {
-gapi.load('client:picker', { 'callback': onGapiLoad });
+        gapi.load('client:picker', { 'callback': onGapiLoad });
     };
 
     function onGapiLoad() {
@@ -68,23 +69,27 @@ gapi.load('client:picker', { 'callback': onGapiLoad });
         oauthToken = urlParams.get('token');
         apiKey = urlParams.get('apiKey');
         appId = urlParams.get('appId');
+        mimeType = urlParams.get('mimeType'); // Get mimeType from URL
 
         if (!oauthToken || !apiKey || !appId) {
             document.body.innerText = "Error: Missing required URL parameters (token, apiKey, appId).";
             return;
         }
 
-        // The gapi.client library is not strictly needed for the picker
-        // but can be loaded if you want to make other API calls from here.
-        // For this example, we just need the picker.
         gapi.auth.setToken({ 'access_token': oauthToken });
         createPicker();
     }
 
-    // 2. Create and render a Picker object for searching images.
+    // 2. Create and render a Picker object.
     function createPicker() {
       const view = new google.picker.View(google.picker.ViewId.DOCS);
-      view.setMimeTypes("image/png,image/jpeg,image/jpg,application/pdf"); // Example mime types
+      
+      // Conditionally set MIME types
+      if (mimeType && mimeType.trim() !== "") {
+        view.setMimeTypes(mimeType);
+      }
+      // If mimeType is not provided or is empty, setMimeTypes is not called,
+      // which defaults to allowing all files.
 
       const pickerBuilder = new google.picker.PickerBuilder()
         .setAppId(appId)
@@ -103,18 +108,13 @@ gapi.load('client:picker', { 'callback': onGapiLoad });
     // 3. A simple callback implementation.
     function pickerCallback(data) {
       if (data.action == google.picker.Action.PICKED) {
-        // The most important part: send data back to Flutter
-        // The channel name 'PickerResult' must match the one in your Dart code.
         if (window.PickerResult && window.PickerResult.postMessage) {
-            // We stringify the array of documents.
             window.PickerResult.postMessage(JSON.stringify(data.docs));
         } else {
-            // Fallback for debugging in a regular browser
             console.log(data.docs);
             document.body.innerText = "Picker finished. Data: " + JSON.stringify(data.docs);
         }
       } else if (data.action == google.picker.Action.CANCEL) {
-        // User cancelled. Send a specific message back.
          if (window.PickerResult && window.PickerResult.postMessage) {
             window.PickerResult.postMessage("CANCEL");
         }

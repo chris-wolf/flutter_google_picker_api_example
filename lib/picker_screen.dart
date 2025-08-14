@@ -1,18 +1,23 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:http/http.dart' as http; // Import the http package
+import 'package:http/http.dart' as http;
 
 class PickerScreen extends StatefulWidget {
   final String accessToken;
   final String apiKey;
   final String appId;
+  final String? mimeType;
+  final String webUrl;
 
   const PickerScreen({
     super.key,
     required this.accessToken,
     required this.apiKey,
     required this.appId,
+    required this.webUrl,
+    this.mimeType,
+
   });
 
   @override
@@ -34,9 +39,8 @@ class _PickerScreenState extends State<PickerScreen> {
       ..addJavaScriptChannel(
         'PickerResult',
         onMessageReceived: (JavaScriptMessage message) {
-          // ... (Your existing message handling logic here) ...
           if (message.message == "CANCEL") {
-            Navigator.pop(context); // Pop without a result
+            Navigator.pop(context);
             return;
           }
           try {
@@ -57,23 +61,17 @@ class _PickerScreenState extends State<PickerScreen> {
   }
 
   Future<void> _loadHtmlFromUrl() async {
-    // ================== START: ADDED DELAY ==================
-    // This 10-second delay is for debugging, allowing time to connect
-    // Chrome DevTools to the WebView instance.
-    // REMEMBER TO REMOVE THIS LINE FOR PRODUCTION BUILDS.
-    debugPrint("Starting 10-second delay for WebView debugging...");
-    await Future.delayed(const Duration(seconds: 10));
-    debugPrint("Delay finished. Loading WebView content.");
-    // =================== END: ADDED DELAY ===================
-
-
     // Construct the full URL with parameters first
-    final pickerUrlWithParams = Uri.parse('https://birthday-calendar.app/open_google_picker.html')
-        .replace(queryParameters: {
+    final queryParameters = {
       'token': widget.accessToken,
       'apiKey': widget.apiKey,
       'appId': widget.appId,
-    });
+    };
+    if (widget.mimeType != null) {
+      queryParameters['mimeType'] = widget.mimeType!;
+    }
+    final pickerUrlWithParams = Uri.parse(widget.webUrl)
+        .replace(queryParameters: queryParameters);
 
     try {
       // Now, fetch the content FROM THE URL THAT INCLUDES THE PARAMETERS
@@ -115,11 +113,9 @@ class _PickerScreenState extends State<PickerScreen> {
           // We only show the WebView if there's no error
           if (_error == null)
             WebViewWidget(controller: _controller),
-
           // Show loading indicator
           if (_isLoading)
             const Center(child: CircularProgressIndicator()),
-
           // Show error message if something went wrong
           if (_error != null)
             Center(child: Padding(

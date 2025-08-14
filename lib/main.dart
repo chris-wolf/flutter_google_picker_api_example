@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'picker_screen.dart'; // We will create this next
+import 'picker_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,10 +33,11 @@ class _HomeScreenState extends State<HomeScreen> {
   GoogleSignInAccount? _currentUser;
   String _pickedFileResult = 'No file picked yet.';
 
-  // IMPORTANT: Replace with your actual credentials
-  final String _webClientId = '777610123216345-8nt....apps.googleusercontent.com'; // Get this from Google Cloud Console
-  final String _apiKey = 'AIzaS...'; // Get this from Google Cloud Console
-  final String _appId = '777610123216345'; // This is the numeric part of your client ID
+  // IMPORTANT: Replace with your actual credentials from the Google Cloud Console
+  final String _webClientId = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com'; // e.g., '1234567890-abcdefg.apps.googleusercontent.com'
+  final String _appId = 'YOUR_APP_ID'; // e.g., '1234567890' (This is the numeric part of your client ID)
+  final String _apiKey = 'YOUR_API_KEY'; // e.g., 'AIzaSkyr6390df24jey7ox7yn2'
+  final String _webUrl = 'https.your-domain.com/open_google_picker.html'; // location of the uploaded open_google_picker.html file
 
   late final GoogleSignIn _googleSignIn;
 
@@ -44,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _googleSignIn = GoogleSignIn(
-      clientId: _webClientId, // This is crucial for getting an ID token
+      clientId: _webClientId,
       scopes: <String>[
         'https://www.googleapis.com/auth/drive.file',
       ],
@@ -72,7 +73,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
     Future<void> _openPicker() async {
       if (_currentUser == null) {
-        // ... (rest of the code)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please sign in first.')),
+        );
+        return;
+      }
+
+      if (_webClientId == 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com' ||
+          _apiKey == 'YOUR_API_KEY' ||
+          _appId == 'YOUR_APP_ID' ||
+          _webUrl == 'https.your-domain.com/open_google_picker.html') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please update the placeholder credentials in main.dart')),
+        );
         return;
       }
 
@@ -83,6 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
       debugPrint("--> Access Token: $accessToken");
       debugPrint("--> API Key: $_apiKey");
       debugPrint("--> App ID: $_appId");
+      debugPrint("--> Web URL: $_webUrl");
+
 
       if (accessToken.isEmpty || _apiKey.isEmpty || _appId.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -99,6 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
             accessToken: accessToken,
             apiKey: _apiKey,
             appId: _appId,
+            webUrl: _webUrl, // Pass the webUrl
           ),
         ),
       );
