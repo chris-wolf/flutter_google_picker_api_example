@@ -17,7 +17,6 @@ class PickerScreen extends StatefulWidget {
     required this.appId,
     required this.webUrl,
     this.mimeType,
-
   });
 
   @override
@@ -70,8 +69,9 @@ class _PickerScreenState extends State<PickerScreen> {
     if (widget.mimeType != null) {
       queryParameters['mimeType'] = widget.mimeType!;
     }
-    final pickerUrlWithParams = Uri.parse(widget.webUrl)
-        .replace(queryParameters: queryParameters);
+    final pickerUrlWithParams = Uri.parse(
+      widget.webUrl,
+    ).replace(queryParameters: queryParameters);
 
     try {
       // Now, fetch the content FROM THE URL THAT INCLUDES THE PARAMETERS
@@ -80,8 +80,8 @@ class _PickerScreenState extends State<PickerScreen> {
       if (response.statusCode == 200) {
         // We still provide the base URL for the security context
         await _controller.loadHtmlString(
-            response.body,
-            baseUrl: pickerUrlWithParams.toString()
+          response.body,
+          baseUrl: pickerUrlWithParams.toString(),
         );
       } else {
         throw Exception('Failed to load page: ${response.statusCode}');
@@ -97,7 +97,6 @@ class _PickerScreenState extends State<PickerScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,17 +110,17 @@ class _PickerScreenState extends State<PickerScreen> {
       body: Stack(
         children: [
           // We only show the WebView if there's no error
-          if (_error == null)
-            WebViewWidget(controller: _controller),
+          if (_error == null) WebViewWidget(controller: _controller),
           // Show loading indicator
-          if (_isLoading)
-            const Center(child: CircularProgressIndicator()),
+          if (_isLoading) const Center(child: CircularProgressIndicator()),
           // Show error message if something went wrong
           if (_error != null)
-            Center(child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(_error!, style: const TextStyle(color: Colors.red)),
-            )),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(_error!, style: const TextStyle(color: Colors.red)),
+              ),
+            ),
         ],
       ),
     );
