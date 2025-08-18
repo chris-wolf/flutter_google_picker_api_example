@@ -37,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'YOUR_APP_ID'; // e.g., '1234567890' (This is the numeric part of your client ID)
   final String _apiKey = 'YOUR_API_KEY'; // e.g., 'AIzaSkyr6390df24jey7ox7yn2'
   final String _webUrl =
-      'https.your-domain.com/open_google_picker.html'; // location of the uploaded open_google_picker.html file
+      'https.your-domain.com/google_picker.html'; // location of the uploaded google_picker.html file
 
   late final GoogleSignIn _googleSignIn;
 
@@ -80,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_webClientId == 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com' ||
         _apiKey == 'YOUR_API_KEY' ||
         _appId == 'YOUR_APP_ID' ||
-        _webUrl == 'https.your-domain.com/open_google_picker.html') {
+        _webUrl == 'https.your-domain.com/google_picker.html') {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(

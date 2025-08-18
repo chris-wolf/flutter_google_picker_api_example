@@ -6,16 +6,16 @@ This example demonstrates how to integrate the Google Picker API into a Flutter 
 
 To use this example, you need to configure your Google Cloud Console project and update the Flutter application with your credentials.
 
-**1. Upload `open_google_picker.html`:**
+**1. Upload `google_picker.html`:**
 
-*   Upload the `open_google_picker.html` file (located in the root of this project) to your web server. This file handles the Google Picker interaction.
+*   Upload the `google_picker.html` file (located in the root of this project) to your web server. This file handles the Google Picker interaction.
 
 **2. Configure Flutter Application:**
 
 *   Open the `lib/main.dart` file in your Flutter project.
 *   Locate the following placeholder variables:
-    *   `_webUrl`: Set this to the public URL where you uploaded `open_google_picker.html`. For example, `https://your-domain.com/open_google_picker.html`.
-        *   **Note on Web Server Configuration:** Ensure your web server is configured to correctly serve the `open_google_picker.html` file at this URL. If you are not directly linking to the `.html` file (e.g., if you are using clean URLs or a routing system), you might need to configure your server (e.g., using an `.htaccess` file on Apache, or similar configurations for Nginx or other servers) to ensure that requests to this path load the `open_google_picker.html` file.
+    *   `_webUrl`: Set this to the public URL where you uploaded `google_picker.html`. For example, `https://your-domain.com/google_picker.html`.
+        *   **Note on Web Server Configuration:** Ensure your web server is configured to correctly serve the `google_picker.html` file at this URL. If you are not directly linking to the `.html` file (e.g., if you are using clean URLs or a routing system), you might need to configure your server (e.g., using an `.htaccess` file on Apache, or similar configurations for Nginx or other servers) to ensure that requests to this path load the `google_picker.html` file.
     *   `_webClientId`: You will get this from the Google Cloud Console (see step 3).
     *   `_apiKey`: You will get this from the Google Cloud Console (see step 4).
     *   `_appId`: This is the numeric part of your `_webClientId`.
@@ -27,7 +27,7 @@ To use this example, you need to configure your Google Cloud Console project and
 *   Click on "+ CREATE CREDENTIALS" and select "OAuth client ID".
 *   Choose "Web application" as the application type.
 *   Give it a name (e.g., "Flutter Google Picker Web Client").
-*   Under "Authorised JavaScript origins", add the URL of your website where `open_google_picker.html` is hosted (e.g., `https://your-domain.com`). This must match the domain of your `_webUrl`.
+*   Under "Authorised JavaScript origins", add the URL of your website where `google_picker.html` is hosted (e.g., `https://your-domain.com`). This must match the domain of your `_webUrl`.
 *   Click "Create".
 *   Copy the displayed "Client ID". This is your `_webClientId`.
 *   The numeric part of this Client ID is your `_appId`. For example, if your Client ID is `1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com`, then your `_appId` is `1234567890`.
